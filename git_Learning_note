@@ -1,0 +1,145 @@
+# Git 学习知识点
+
+## git config
+
+1. git --version               查看当前git版本
+
+2. git config                    配置git（默认是git config --local，如果想配置为全局的则git config --global）
+
+3. git config --list           查看git全部的config配置列表
+
+4. alias                            用来配置命令的别名，因此用来减少每次操作时需要输入的字符数，如
+
+   ​									git config --global alias.st status   将status 用st来表示
+
+git config的原理分为全局的和局部的分析
+
+对于全局的配置，git是去读写一个名为**.gitconfig**的文件
+
+对于局部的配置，git是去读写局部的git仓库下的config文件夹
+
+git读取时的优先级为：local > global > system
+
+## git clone / git tag
+
+git clone 命令默认将github网站中的master分支克隆下来
+
+git clone 命令中，若只想克隆下来特定分支的程序，需要加选项 - b ，例如
+
+​	git clone -b main https://GitHub.com/Wangshuqiang272/hilink.git   (-b选项后需要加入分支名称)
+
+git tag    tag 意为标签的意思，即将当前程序版本打一个标签，通常为V1.0.0
+
+其中git 打标签需要用到-a参数  ，同时-m选项用来标记信息
+
+​	例如 git tag -a V1.0.0 -m "V1.0.0"    这里只是在本地仓库中打了一个标签，但他并没有推送到远程仓库（github）中。
+
+如果想推送tag到GitHub中，需要用到git push --tag
+
+##  git status
+
+​	git status显示出的命令一般有三种，已添加至暂存区的文件(既通过git add命令)，第二种是添加进暂存区中，经过了修改但没有再次提交，第三种是新建的文件没有添加进暂存区中，此时git将不对这种文件做跟踪
+
+Plus：已添加到本地仓库的文件，git status将并不会显示该文件
+
+​	status查找出的结果只是针对于前一个版本的差别。
+
+​	所有修改的文件都要及时地add到暂存区以方便提交
+
+​	![Git status 文件图解](C:\Users\wangshuqiang\Desktop\学习笔记\Git\git status图解.jpg)
+
+​	修改后的文件使用**git add 文件名**添加到暂存区，通过**git reset 文件名**撤销该文件添加到暂存区的状态，使用**git checkout 文件名**可以从版本库中回溯到最近一次提交的状态，覆盖到工作区。
+
+### 查看暂存区问价内容
+
+1. **git ls-files -s 文件名**     查询到文件对应的Blob对象
+2. **git cat-file -p 查询到的Blob对象前六位**
+
+## git diff
+
+​	git diff只能追踪到提交到暂存区的文件进行修改的内容，如果一个文件是未被追踪的状态，则更改该文件不会被追踪到修改了那些
+
+部分
+
+## git commit -m "提交信息"
+
+​	标准commit message包含三部分**Header**，**Body**，**Footer** 。平常只是用Header部分。
+
+​	完整的Header格式为type(scope)：subject
+
+1. type几种常见类型
+   * feat：新功能
+   * fix：修复bug
+   * style：格式
+   * refactor：代码格式
+   * chore：项目构建(上线前进行打包，通常为项目待上线的过程
+2. scope：通常为模块名称
+3. subject：上传原因，一些简短的描述信息
+
+例   **git commit -m "refactor (UART):优化重构了串口接受字节的解析方式"**
+
+## git branch分支
+
+​	git branch 命令						  		用来查看当前仓库所有的分支，其中，标有*****的分支为当前所在的分支
+
+​	git branch 分支名					 		 用来创建一个新的分支。
+
+​	git checkout 已存在的分支名  		 用来切换当前所在的分支名。
+
+​	git checkout -b 新的分支名称  		用来创建一个新的分支并切换到该分支。
+
+​	git branch -d 已存在的分支名  		用来删除分支
+
+​	git merge 已存在的分支名        		用来将其他分支上的内容融合进当前所在的分支中
+
+​	使用merge命令时，若合并的两个文件中同一行写了不同的内容，则会造成文件冲突，此时会报错，需要手动解决保留哪个，解决完之后需要添加到暂存区，进而保存进本地仓库。
+
+如果想看 HEAD 指向，可以通过 `cat .git/HEAD` 查看
+
+`git branch 分支名`命令会在当前分支指向的节点创建出一个新的节点，即新分支指向的节点与原分支相同。
+
+## 远程分支
+
+​	实际开发中，每一个本地分支都有一个远程分支与之相对应。
+
+​	git fetch 命令不会对本地仓库内容进行更新
+
+​	git merge会将本地仓库内容更新
+
+​	**git pull =  git fetch + git merge**
+
+
+
+## 远程分支推送
+
+git push 网页地址 分支名
+
+​	**git push 网页地址 -d 分支名** 本地操作用来删除远程分支命令
+
+**git remote -v**查看本地仓库中的远程仓库列表
+
+**git remote add 名称 网页地址**   将远程仓库关联到本地仓
+
+**git remote remove**	用来将远程仓与本地仓的联系解除
+
+
+
+## git 回滚
+
+#### 将add进暂存区的文件回退为修改状态
+
+​	**git reset HEAD 文件名**
+
+#### 将commit到本地仓库的文件进行回溯
+
+​	git revert commitid
+
+
+
+
+
+## Git Cherry-pick
+
+- `git cherry-pick <提交号>...`  将一些提交复制到当前所在的位置（`HEAD`）下面
+
+  

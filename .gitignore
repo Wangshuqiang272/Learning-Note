@@ -1,1 +1,5 @@
 Cmake/src/*/build/*
+
+dataStruct/src/build/*
+
+.vscode/*

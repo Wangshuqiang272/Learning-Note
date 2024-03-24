@@ -1,0 +1,6 @@
+#ifndef CONFIG_H_IN
+#define CONFIG_H_IN
+
+#cmakedefine USE_MANAGER_COMMON_LIB
+
+#endif

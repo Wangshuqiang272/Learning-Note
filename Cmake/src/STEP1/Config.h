@@ -1,0 +1,10 @@
+#ifndef CONFIG_H_IN
+#define CONFIG_H_IN
+
+#define VERSION_MAJOR 0
+#define VERSION_MINOR 0
+#define VERSION_PATCH 1
+
+#define BUILD_TIMESTAMP "2024-03-23 12:53:49"
+
+#endif

@@ -1,0 +1,1 @@
+add_library(managerCommonLib STATIC manager_common.c)

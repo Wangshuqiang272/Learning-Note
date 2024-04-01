@@ -16,7 +16,7 @@
 /* ======================================================================================
  * includes
  */
-
+#include <stdio.h>
 /* ======================================================================================
  * extern
  */
@@ -27,8 +27,19 @@
 #define SUCCESS 1
 #define FAIL 0
 
-#define RUNNING_DEMO_NUMBER ARRAY_DEMO
+#define RUNNING_DEMO_NUMBER SINGLE_LIST
 #define ARRAY_DEMO 1
+#define SINGLE_LIST 2
+
+// #define check_param_null(x, y)                                                 \
+//   if (!x) {                                                                    \
+//     printf(#y "\r\n");
+// }
+// check_param_null(List, headInsert param NULL)
+
+#define check_param_null_void_return(x, y)         { if (!x) {printf(y "\r\n");}}
+
+#define check_param_null_var_return(x, y,var)         { if (!x) {printf(y "\r\n"); return var;}}
 /* ======================================================================================
  * types
  */

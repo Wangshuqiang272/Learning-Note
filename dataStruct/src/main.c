@@ -21,6 +21,7 @@
  * includes
  */
 #include "Array/array.h"
+#include "LinkList/linkList.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -57,6 +58,10 @@ static Array demoArray = {0};
 int main(int argc, char *argv[]) {
 #if (RUNNING_DEMO_NUMBER == 1)
   testArrayDemo(&demoArray);
+#endif
+
+#if (SINGLE_LIST == RUNNING_DEMO_NUMBER)
+  testSingleList();
 #endif
   return 0;
 }

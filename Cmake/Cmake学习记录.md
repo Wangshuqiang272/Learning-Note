@@ -175,9 +175,19 @@ add_library(<name> [STATIC | SHARED | MODULE]
 
 #### 		1.调用`add_subdirectory`命令添加文件夹
 
-​				命令作用：**添加一个子目录并构建该子目录**
+​	命令作用：**添加一个子目录并构建该子目录**
 
-注：当调用**add_subdirectory**命令后，cmake构建工程会自动将该子目录添加到编译和链接的搜索目录中，以保证整个构建工程能满足依赖，这也是为什么使用add_subdirectory后不需要将子文件夹加入到头文件或库文件搜索目录也能搜索到子目录的头文件或库文件。
+注1：当调用**add_subdirectory**命令后，cmake构建工程会自动将该子目录添加到编译和链接的搜索目录中，以保证整个构建工程能满足依赖，这也是为什么使用add_subdirectory后不需要将子文件夹加入到头文件或库文件搜索目录也能搜索到子目录的头文件或库文件。
+
+注2：该命令**不得**使用set变量方式进行引用如：
+
+```cmake
+# 错误示范 如果这么写，只会运行A目录下的CMakeLists.txt,B/C下的目录不会被执行
+set(subdir A B C)
+add_subdirectory(${subdir})
+```
+
+
 
 #### 		2.调用`target_link_libraries `命令
 

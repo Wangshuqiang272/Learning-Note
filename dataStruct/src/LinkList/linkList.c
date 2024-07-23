@@ -95,7 +95,11 @@ static int backInsertNode(LNode *node, int value) {
   LNode *L = node;
   LNode *newNode = (LNode *)malloc(sizeof(LNode));
   newNode->data = value;
-  newNode->next = L->next;
+  if (L->next == NULL) {
+    newNode->next = NULL;
+  } else {
+    newNode->next = L->next;
+  }
   L->next = newNode;
   return SUCCESS;
 }
@@ -117,7 +121,7 @@ static LNode *getItem(LNode *List, int pos) {
 int ListInsertByPosition(LNode *list, int pos, int value) {
   check_param_null_var_return(list, "ListInsertByPosition param null", FAIL);
 
-  LNode* L = getItem(list, pos - 1);
+  LNode *L = getItem(list, pos - 1);
 
   backInsertNode(L, value);
 }
@@ -149,7 +153,7 @@ void traverseList(LNode *List) {
 int ListDeleteNode(LNode *List, int pos, int *deleteValue) {
   check_param_null_void_return(List, "ListDeleteNode param NULL");
 
-  LNode* L = getItem(List,pos -1);
+  LNode *L = getItem(List, pos - 1);
 
   if (L == NULL)
     return FAIL;
@@ -157,13 +161,25 @@ int ListDeleteNode(LNode *List, int pos, int *deleteValue) {
   if (L->next == NULL)
     return FAIL;
 
-  LNode* q = L->next;
+  LNode *q = L->next;
   *deleteValue = q->data;
   L->next = q->next;
   q->next = NULL;
   free(q);
   List->data--;
   return SUCCESS;
+}
+
+int ListDeleteNodeOptimise(LNode *List, int pos, int *deleteValue) {
+
+  check_param_null_void_return(List, "ListDeleteNode param NULL");
+  LNode *L = getItem(List, pos);
+
+  if (L == NULL)
+    return FAIL;
+
+  *deleteValue = L->data;
+  L->next = L->next->next;
 }
 
 void testSingleList(void) {

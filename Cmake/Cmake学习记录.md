@@ -2,6 +2,14 @@
 
 # Cmake学习记录
 
+## Q：为什么说Cmake是一块跨平台编译工具，用于管理软件构建过程
+
+## A：cmake可以用来生成不同平台的编译文件，如Linux平台下的Makefile文件或者是Windows平台下的解决方案文件(Visual Studio)
+
+**具体方式**：用户可以通过cmake命令行参数来指定生成的构建文件类型，如 `-G "Unix Makefiles"`用来生成linux平台下的Makefile文件以及`-G "Visual Studio 16 2019"`命令生成Visual Studio2019 的解决方案文件。
+
+**默认情况下**：如果用户没有显式指定生成构建文件的类型，CMake 会根据当前操作系统和环境的默认行为来生成相应的构建文件。例如，在 Unix-like 系统上，默认会生成 Makefile；在 Windows 上，默认会生成 Visual Studio 的解决方案文件
+
 ## STEP 1：编译一个由一个源文件生成的二进制文件
 
 ### 1.最简单的项目由一个源文件构成，CMakeList.txt文件只需要两行即可
@@ -13,6 +21,9 @@ cmake_minimum_required
 project(Launcher)
 #使用指定源文件来生成目标可执行文件
 add_executable(Launcher main.c)
+
+# 设置可执行程序的输出位置,通过控制宏 EXECUTABLE_OUTPUT_PATH
+# set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR})
 ```
 
 
@@ -86,14 +97,14 @@ add_executable(Launcher main.c)
 
 3. 备注：
 
-   1. project命令可以不行，cmake默认以"project"作为工程名，上述变量依旧被初始化
+   1. project命令可以不写，cmake默认以"project"作为工程名，上述变量依旧被初始化
    2. project若被调用，需要在cmake_minimum_required命令调用之后，其他命令调用之前
 
 **add_executable**命令解析
 
 ​	作用：通过指定的源文件列表构建出可执行目标文件,同样可以使用target_sources()命令继续为可执行目标文件添加源文件，前提是可执行目标文件已经被`add_executable`或`add_library`定义了。
 
-
+   4.编写CMakeLists.txt时可以指定可执行文件生成位置，通过设置宏定义**EXECUTABLE_OUTPUT_PATH**，注意，由于CMakeLists.txt文件用来生成makefile文件，可执行文件是由makefile文件编译生成的，因此，文件位置应该有makefile中为准，同时该方式也可以指定动态库的生成路径，由于Linux平台下，动态库默认具有执行权限，因此可以通过该方式指定动态库生成位置，而对于静态库来说，在linux平台下默认没有执行权限，因此，需要设置**LIBRARY_OUTPUT_PATH**宏来指定静态库的生成位置。PS：这个宏也可以设置动态库的生成位置哦
 
 ### 2.通过配置文件添加宏定义(版本号、编译时间等)
 
@@ -191,7 +202,14 @@ add_subdirectory(${subdir})
 
 #### 		2.调用`target_link_libraries `命令
 
+​	用于指定目标依赖的库函数。它可以链接静态库、动态库和共享库
 
+```cmake
+# 像这种参数中可以涵盖多种item的可以使用参数变量的形式传入,包括add_executable命令也可以
+target_link_libraries(<target>
+                      <PRIVATE|PUBLIC|INTERFACE> <item>...
+                     [<PRIVATE|PUBLIC|INTERFACE> <item>...]...)
+```
 
 ### 	3.进阶技巧：
 
@@ -204,4 +222,51 @@ add_subdirectory(${subdir})
 ##### 			3.通过STEP1中的configure_file命令，在输入文件中配置#cmakedefine
 
 ##### 			4.在源文件main中用宏将用到库函数的地方包起来		
+
+
+
+## 注释
+
+1. 注释行
+
+   ​	CMakeLists.txt文件中注释采用 **#**进行行注释，可以放在任何位置
+
+2. 注释块
+
+   ​	CMakeLists.txt文件中同样可以采用块注释，使用方式为**#[[]]**
+
+   ​	示例如下：
+
+   ```cmake
+   #[[这是Cmake笔记中注释测试
+   进行块测试]]
+   ```
+
+   ​
+
+## 搜索文件
+
+​	当生成可执行文件的依赖过多时，手动一个一个源文件进行添加显然不是一个好方式，可以借助命令自动搜索源文件`aux_source_directory`,`file`.
+
+1. `aux_source_directory`:该命令用于搜查某个路径下的全部源文件，命令格式为
+
+   ```cmake
+   aux_source_directory(< dir > < variable >)
+   ```
+
+   其中，dir为待搜索的目录，该命令将搜索到的源文件列表存储到variable变量中。
+
+   注：该命令只搜索参数中的dir文件夹下的源文件，不具有递归搜索的功能
+
+2. file 命令也可以搜索源文件，命令格式为
+
+   ```cmake
+   file(GLOB/GLOB_RECURSE 变量名 要搜索的文件路径和文件类型)
+   ```
+
+   其中GLOB参数同aux_source_directory，将指定目录下文件列表存储到变量中(不限定为源文件哦)
+
+   GLOB_RECURSE参数：递归搜索指定目录，功能同GLOB参数
+
+
 

@@ -101,7 +101,7 @@ FreeRTOSConfig.h 文件是 FreeRTOS 的工程配置文件，因为 FreeRTOS 是�
 
 修改stm32f10x_it.c文件
 
-​	我们需要实现一个FreeRTOS的心跳时钟，驱动着FreeRTOS的运行，FreeRTOS帮我们实现了SysTick的启动的配置：在port.c文件中已经实现vPortSetupTimerInterrupt()函数，并且FreeRTOS通用的SysTick中断服务函数也实现了：在port.c文件中已经实现xPortSysTickHandler()函数，所以移植的时候只需要我们在stm32f10x_it.c文件中实现我们对应（STM32）平台上的SysTick_Handler()函数即可，同时，PendSV_Handler()与SVC_Handler()这两个很重要的函数都帮我们实现了，在port.c文件中已经实现xPortPendSVHandler()与vPortSVCHandler()函数，防止我们自己实现不了。
+​	我们需要实现一个FreeRTOS的心跳时钟，驱动着FreeRTOS的运行，FreeRTOS帮我们实现了SysTick的启动的配置：在port.c文件中已经实现vPortSetupTimerInterrupt()函数，当使用者启动FreeRTOS调度器xPortStartScheduler()时，会设置SysTick中断。并且FreeRTOS通用的SysTick中断服务函数也实现了：在port.c文件中已经实现xPortSysTickHandler()函数，所以移植的时候只需要我们在stm32f10x_it.c文件中实现我们对应（STM32）平台上的c()函数即可，同时，PendSV_Handler()与SVC_Handler()这两个很重要的函数都帮我们实现了，在port.c文件中已经实现xPortPendSVHandler()与vPortSVCHandler()函数，防止我们自己实现不了。
 
 具体操作：
 
@@ -150,6 +150,20 @@ FreeRTOSConfig.h 文件是 FreeRTOS 的工程配置文件，因为 FreeRTOS 是�
 ​	根据该数值，在main函数编写测试程序时，调整相对应的任务优先级。
 
 ​	**刚开始移植时，这个宏写了个5，我创建的任务优先级分别是8，10，导致创建的两个任务运行时相互打断（因为设置超过最大值时会自动赋值为最大值），当两个任务优先级相同时触发时间片轮转机制，导致时间片结束后相互打断。恶心我一下子**。
+
+### 4.FreeRTOS时钟分析
+
+​	FreeRTOS作为一种嵌入式实时操作系统框架，需要平台提供其时钟使得该系统框架得以正常运行，这个时钟由平台的系统定时器提供(SysTick)，该定时器由FreeRTOS进行配置，在使用者启动FreeRTOS调度器时进行配置。
+
+在函数`vPortSetupTimerInterrupt()`中，配置宏portNVIC_SYSTICK_LOAD_REG。
+
+```C
+portNVIC_SYSTICK_LOAD_REG = ( configSYSTICK_CLOCK_HZ / configTICK_RATE_HZ ) - 1UL;
+```
+
+​	其中，configSYSTICK_CLOCK_HZ为72M，configTICK_RATE_HZ为1000，此时配置的系统定时器溢出时间为1ms，计算方式如下：
+
+​	系统CPU频率为72M，自增时间为1/72M，再乘以重装载值可得出溢出时间，假定重装载值为72M，则，溢出时间为1s，如果将重装载值减小1000/100倍，则溢出时间也将相应的减少1000/100倍，这就是宏定义`configTICK_RATE_HZ`的意义吧。代表着1秒钟内定时器中断次数，也可以由该值计算出每个时间片的大小。
 
 
 

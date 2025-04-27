@@ -3,3 +3,27 @@ Cmake/src/*/build/*
 dataStruct/src/build/*
 
 .vscode/*
+FreeRTOS/bootloader/keilkilll.bat
+FreeRTOS/bootloader/OBJ/*
+FreeRTOS/bootloader/USER/EventRecorderStub.scvd
+FreeRTOS/bootloader/USER/JLinkSettings.ini
+FreeRTOS/FreeRTOS-port/OBJ/*
+FreeRTOS/bootloader/USER/startup_stm32f10x_hd.lst
+FreeRTOS/bootloader/USER/STM32_Server_Test.map
+FreeRTOS/bootloader/USER/STM32_Server_Test.ElecFans
+FreeRTOS/bootloader/USER/STM32_Server_Test.uvguix.Admin
+FreeRTOS/bootloader/USER/STM32_Server_Test.uvguix.Administrator
+FreeRTOS/bootloader/USER/STM32_Server_Test.uvguix.ElecFans
+FreeRTOS/bootloader/USER/STM32_Server_Test.uvguix.Lenovo
+FreeRTOS/bootloader/USER/STM32_Server_Test.uvguix.wsq38
+FreeRTOS/bootloader/USER/STM32_Server_Test.uvoptx
+FreeRTOS/FreeRTOS-port/keilkilll.bat
+FreeRTOS/FreeRTOS-port/README.TXT
+FreeRTOS/FreeRTOS-port/FreeRTOS/port/RVDS/ARM_CM7/ReadMe.txt
+FreeRTOS/FreeRTOS-port/FreeRTOS/src/readme.txt
+FreeRTOS/FreeRTOS-port/USER/LED.uvguix.wsq38
+FreeRTOS/FreeRTOS-port/USER/LED.uvoptx
+FreeRTOS/bootloader/USER/DebugConfig/STM32_Server_Test_STM32F103RC.dbgconf
+FreeRTOS/FreeRTOS-port/USER/LED.uvguix.wsq38
+FreeRTOS/FreeRTOS-port/USER/Listings/LED.map
+FreeRTOS/FreeRTOS-port/USER/Listings/startup_stm32f10x_hd.lst

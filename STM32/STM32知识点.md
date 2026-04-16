@@ -424,7 +424,8 @@ PWM全程脉冲宽度调制，是一种控制占空比进而控制平均电压/�
 
 ## 13.IIC篇
 
-	### 1.协议简介
+### 1.协议简介
+
 
 ​	**IC**（Inter-Integrated Circuit）是 IIC Bus 简称，中文叫集成电路总线。它是一种[串行通信](https://so.csdn.net/so/search?q=%E4%B8%B2%E8%A1%8C%E9%80%9A%E4%BF%A1&spm=1001.2101.3001.7020)总线，使用多主从架构，由飞利浦公司在1980年代为了让主板、嵌入式系统或手机用以连接低速周边设备而发展。
 
@@ -457,12 +458,167 @@ PWM全程脉冲宽度调制，是一种控制占空比进而控制平均电压/�
 
    手搓IIC时需要注意的问题：
 
-      1. 发送数据时，不论是地址数据还是命令数字还是数据，都是先发高字节，在发送低字节。举例：想发送0xA5(10100101)，发送顺序为1、0、1、0、0、1、0、1。千万要注意顺序。顺便提一下，IIC与串口是相反的，串口是先发低位，再发送高位。SPI与IIC相同，先发高位，后发送低位。
+      1. 发送数据时，不论是地址数据还是命令数字还是数据，都是先发高字节，在发送低字节。举例：想发送0xF0(11110000)，发送顺序为1、1、1、1、0、0、0、0。千万要注意顺序。顺便提一下，IIC与串口是相反的，串口是先发低位，再发送高位。SPI与IIC相同，先发高位，后发送低位。
       2. 开始信号与结束信号的时序要特别注意，不要嫌麻烦写的很随意。
+
+### 3、常用时序
+
+#### 1、使用IIC对从机寄存器的写操作流程
+
+这个操作流程是：
+
+1. 发送IIC开始信号
+2. 发送从机写地址
+3. 接收从机发送的ack信号
+4. 发送需要操作的寄存器地址
+5. 接收从机发送的ack信号
+6. 发送需要写入的数据
+7. 接收从机发送的ack信号
+8. 发送IIC结束信号
+
+这样就是一个发送数据到从机的过程。
+
+![](imageshack/aqa.png)
+
+#### 2、使用IIC对从机寄存器的读操作流程
+
+这个操作流程是：
+
+1. 发送IIC开始信号
+2. 发送从机写地址
+3. 接收从机发送的ack信号
+4. 发送需要读的寄存器地址
+5. 接收从机发送的ack信号
+6. 再次发送IIC开始信号
+7. 发送从机读地址
+8. 读取SDA线上的数据
+9. 发送NACK结束读取
+10. 发送结束信号
+
+![](imageshack/eqe.png)
+
+这样就完成了主机读取从机的数据操作。
+
+这里或许会有疑问，为什么需要读数据时要先写从机寄存器地址
+
+简单直接的回答是：**因为从机（Slave）不知道主机（Master）想读哪个寄存器。**
+
+#### 1. 核心矛盾：从机没有“地址指针”的记忆
+
+绝大多数IIC从机设备（如传感器、存储器）内部有多个寄存器地址（例如0x00是器件ID，0x01是数据高字节，0x02是数据低字节）。
+
+- **主机想要的是**：读取寄存器 `0x01` 里的数据。
+- **从机面临的问题**：当主机直接发“读命令”时，从机不知道该把 `0x00`、`0x01` 还是 `0x02` 的数据放到总线上。它没有默认的当前地址，或者上一次通信结束后地址指针已经失效。
+
+### 4.代码示例
+
+```c
+void IIC_Start(void) 
+{ 
+	SDA_OUT();     //sda线输出 
+	IIC_SDA=1;       
+	IIC_SCL=1; 
+	delay_us(4); 
+	IIC_SDA=0;     //START:when CLK is high,DATA change form high to low  
+	delay_us(4); 
+	IIC_SCL=0;   //钳住I2C总线，准备发送或接收数据  
+}
+```
+
+```c
+void IIC_Stop(void) 
+{ 
+	SDA_OUT();   //sda线输出 
+	IIC_SCL=0; 
+	IIC_SDA=0;    //STOP:when CLK is high DATA change form low to high 
+	delay_us(4); 
+	IIC_SCL=1;  
+	IIC_SDA=1;    //发送I2C总线结束信号 
+	delay_us(4);            
+}
+```
+
+```c
+void IIC_Send_Byte(u8 txd) 
+{   
+	u8 t;    
+	SDA_OUT();       
+	IIC_SCL=0;//拉低时钟开始数据传输 
+	for(t=0;t<8;t++) 
+    {  
+		IIC_SDA=(txd&0x80)>>7; 
+		txd<<=1;     
+  		delay_us(2);   //对TEA5767这三个延时都是必须的 
+		IIC_SCL=1; 
+		delay_us(2);  
+		IIC_SCL=0;  
+		delay_us(2); 
+    }   
+}  
+```
+
+```C
+u8 IIC_Read_Byte(unsigned char ack) 
+{   
+	unsigned char i,receive=0; 
+	SDA_IN();       //SDA设置为输入 
+    for(i=0;i<8;i++ ) 
+ 	{   
+		IIC_SCL=0;  
+		delay_us(2); 
+		IIC_SCL=1; 
+		receive<<=1; 
+		if(READ_SDA)receive++;    
+		delay_us(1);  
+    }       
+    if (!ack) 
+        IIC_NAck();   //发送nACK 
+    else 
+        IIC_Ack();    //发送ACK    
+    return receive; 
+
+}
+```
+
+```c
+u8 IIC_Wait_Ack(void) 
+{ 
+   u8 ucErrTime=0; 
+   SDA_IN();      //SDA设置为输入   
+   IIC_SDA=1;delay_us(1);     
+   IIC_SCL=1;delay_us(1);   
+   while(READ_SDA) 
+   {  
+		ucErrTime++; 
+    	if(ucErrTime>250) 
+    	{   
+			IIC_Stop(); 
+     		return 1; 
+    	} 
+   } 
+   IIC_SCL=0;    //时钟输出0      
+   return 0;   
+} 
+```
+
+```c
+void IIC_Ack(void) 
+{   
+ 	IIC_SCL=0; 
+ 	SDA_OUT(); 
+ 	IIC_SDA=0; 
+ 	delay_us(2); 
+ 	IIC_SCL=1; 
+ 	delay_us(2); 
+ 	IIC_SCL=0; 
+} 
+```
 
 
 
 ## 14.SPI篇
+
+
 
 ## 15.CAN总线篇
 
@@ -762,7 +918,8 @@ LCD_RAM(1**0**0000000000)会将A10信号线拉低，表示传输的是命令。�
 
 ​	随后，即可向LCD显示屏显存写入待显示数据，驱动芯片自动将显示数据转换成RGB信息显示在显示屏中，不需要发送额外的“显示”指令。
 
-	#### 1.显示一张图片
+#### 1.显示一张图片
+
 
 ​	既然用到了LCD屏幕，不可避免的想要显示一张图片。
 
@@ -773,6 +930,8 @@ LCD_RAM(1**0**0000000000)会将A10信号线拉低，表示传输的是命令。�
 ​	若想要在LCD屏幕中显示图片，则需要根据图片生成像素点RGB数据，也称为取模，根据LCD初始化时设置的
 
 **Interface Pixel Format**（0x3A），颜色深度位数，从而进行图片取模。比如说，LCD初始化脚本中设置了LCD的接口像素格式为**16-bits / pixel **，那么，就需要对图片取模时，采用16位真彩色进行取模。
+
+取模软件：Img2Lcd.exe
 
 ```c
 LCD_WR_REG(0x3A);   // 设置指令

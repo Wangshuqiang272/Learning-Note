@@ -126,6 +126,7 @@ NVIC value of 255. */
 
 #define xPortPendSVHandler 	PendSV_Handler
 #define vPortSVCHandler 	SVC_Handler
+#define configSUPPORT_DYNAMIC_ALLOCATION 1
 
 #endif /* FREERTOS_CONFIG_H */
 

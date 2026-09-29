@@ -162,7 +162,7 @@ extern void vPortExitCritical( void );
 
 /* Port specific optimisations. */
 #ifndef configUSE_PORT_OPTIMISED_TASK_SELECTION
-	#define configUSE_PORT_OPTIMISED_TASK_SELECTION 1
+	#define configUSE_PORT_OPTIMISED_TASK_SELECTION 0
 #endif
 
 #if configUSE_PORT_OPTIMISED_TASK_SELECTION == 1
